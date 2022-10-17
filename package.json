@@ -1,0 +1,22 @@
+{
+  "name": "arc2",
+  "version": "1.0.0",
+  "description": "school project",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/79docent/ARC2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/79docent/ARC2/issues"
+  },
+  "homepage": "https://github.com/79docent/ARC2#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
