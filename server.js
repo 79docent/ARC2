@@ -4,6 +4,7 @@ const path = require('path')
 const bodyParser = require("body-parser")
 const https = require("https")
 const {Datastore} = require('@google-cloud/datastore');
+var request = require('request');
 
 const datastore = new Datastore();
 
