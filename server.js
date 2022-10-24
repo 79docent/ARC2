@@ -11,43 +11,45 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.get('/updateWeather', function(req, res) {
     res.sendFile(path.join(__dirname) + '/views/index.html');
-    
 });
 
 app.post('/', function(req,res) {
-    const cityName = req.body.cityName
-    const url = "https://api.openweathermap.org/data/2.5/weather?q="+ cityName+"&appid=d248ede03a6ab01b39c2b33e5adc019c&units=metric"
+    let counter = 0;
+    let interval = setInterval(() => {
+        const cityName = 'Warszawa'
+        const url = "https://api.openweathermap.org/data/2.5/weather?q="+ cityName+"&appid=d248ede03a6ab01b39c2b33e5adc019c&units=metric"
+        
+        https.get(url, function(response){
+            response.on("data", function(data){
+                const jsondata = JSON.parse(data)
+                const temp = jsondata.main.temp
+                const des = jsondata.weather[0].description
     
-    https.get(url, function(response){
-        response.on("data", function(data){
-            const jsondata = JSON.parse(data)
-            const temp = jsondata.main.temp
-            const des = jsondata.weather[0].description
-
-            const kind = 'Entity';
-
-            const name = 'sampleentity1';
-
-            const entityKey = datastore.key([kind, name]);
-
-            const entity = {
-                key: entityKey,
-                data: {
-                    city: cityName,
-                    temp: temp,
-                    des: des,
-                },
-            };
-
-            datastore.save(entity)
-
-            console.log(`City: ${entity.city} Temp: ${entity.temp}`)
-
-            res.write("<h1>The temperature in " + cityName + " is " + temp + " degress Cel. </h1>");
-            res.write("<p>The weather description: " + des + "</p>");
-            res.send();
+                const kind = 'Entity';
+    
+                const name = 'sampleentity1';
+    
+                const entityKey = datastore.key([kind, name]);
+    
+                const entity = {
+                    key: entityKey,
+                    data: {
+                        city: cityName,
+                        temp: temp,
+                        des: des,
+                    },
+                };
+    
+                datastore.save(entity)
+    
+                console.log(`City: ${entity.city} Temp: ${entity.temp}`)
+                
+                if(counter >= 3){
+                    clearInterval(interval)
+                }
+            })
         })
-    })
+    }, 10000)
 });
 
 const PORT = process.env.PORT || 8080;
