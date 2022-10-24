@@ -16,7 +16,7 @@ app.get('/updateWeather', function(req, res) {
 app.post('/', function(req,res) {
     let counter = 0;
     let interval = setInterval(() => {
-        const cityName = 'Warszawa'
+        const cityName = req.body.cityName
         const url = "https://api.openweathermap.org/data/2.5/weather?q="+ cityName+"&appid=d248ede03a6ab01b39c2b33e5adc019c&units=metric"
         
         https.get(url, function(response){
@@ -27,7 +27,7 @@ app.post('/', function(req,res) {
     
                 const kind = 'Entity';
     
-                const name = 'sampleentity1';
+                const name = `sampleentity1${counter}`;
     
                 const entityKey = datastore.key([kind, name]);
     
@@ -42,11 +42,17 @@ app.post('/', function(req,res) {
     
                 datastore.save(entity)
     
-                console.log(`City: ${entity.city} Temp: ${entity.temp}`)
+                console.log(`City: ${entity.data.city} Temp: ${entity.data.temp}`)
                 
+                counter++;
+
                 if(counter >= 3){
                     clearInterval(interval)
                 }
+
+                res.write("<h1>The temperature in " + cityName + " is " + temp + " degress Cel. </h1>");
+                res.write("<p>The weather description: " + des + "</p>");
+                res.send();
             })
         })
     }, 10000)
