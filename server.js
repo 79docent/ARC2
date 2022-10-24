@@ -19,7 +19,7 @@ app.post('/', function(req,res) {
     const url = "https://api.openweathermap.org/data/2.5/weather?q="+ cityName+"&appid=d248ede03a6ab01b39c2b33e5adc019c&units=metric"
     
     https.get(url, function(response){
-        response.on("data", async function(data){
+        response.on("data", function(data){
             const jsondata = JSON.parse(data)
             const temp = jsondata.main.temp
             const des = jsondata.weather[0].description
@@ -27,10 +27,12 @@ app.post('/', function(req,res) {
             const entity = {
                 city: cityName,
                 temp: temp,
-                des: des,
+                des: des
             };
 
-            await datastore.save(entity)
+            datastore.save(entity)
+
+            console.log("City: ${entity.city} Temp: ${entity.temp}")
 
             res.write("<h1>The temperature in " + cityName + " is " + temp + " degress Cel. </h1>");
             res.write("<p>The weather description: " + des + "</p>");
