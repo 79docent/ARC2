@@ -15,7 +15,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.route('/getweather').get(function(req, res) {
     const cityName = 'Warszawa'
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=d248ede03a6ab01b39c2b33e5adc019c&units=metric`
-    request({
+    let request = request({
         method: 'GET',
         uri: url,
     },function(response){
@@ -46,6 +46,7 @@ app.route('/getweather').get(function(req, res) {
             counter++;
         });
     });
+    request.end()
 });
 
 // app.post('/', function(req,res) {
