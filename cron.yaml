@@ -1,4 +1,4 @@
 cron:
-- description: "save weather every 15 seconds"
+- description: "save weather every 1 minutes"
   url: /getweather
-  schedule: every 15 second
+  schedule: every 1 minutes
