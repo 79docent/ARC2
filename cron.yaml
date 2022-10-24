@@ -1,5 +1,4 @@
 cron:
- url: /updateWea
-
-
-  
+- description: "save weather every 15 seconds"
+  url: /getweather
+  schedule: every 15 second
