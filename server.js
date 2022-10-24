@@ -24,15 +24,24 @@ app.post('/', function(req,res) {
             const temp = jsondata.main.temp
             const des = jsondata.weather[0].description
 
+            const kind = 'Entity';
+
+            const name = 'sampleentity1';
+
+            const entityKey = datastore.key([kind, name]);
+
             const entity = {
-                city: cityName,
-                temp: temp,
-                des: des
+                key: entityKey,
+                data: {
+                    city: cityName,
+                    temp: temp,
+                    des: des,
+                },
             };
 
             datastore.save(entity)
 
-            console.log("City: ${entity.city} Temp: ${entity.temp}")
+            console.log(`City: ${entity.city} Temp: ${entity.temp}`)
 
             res.write("<h1>The temperature in " + cityName + " is " + temp + " degress Cel. </h1>");
             res.write("<p>The weather description: " + des + "</p>");
