@@ -11,11 +11,13 @@ var counter = 0;
 
 app.use(bodyParser.urlencoded({extended: true}));
 
-app.get('/getweather', function(req, res) {
+app.route('/getweather').get(function(req, res) {
     const cityName = 'Warszawa'
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=d248ede03a6ab01b39c2b33e5adc019c&units=metric`
-        
-    https.get(url, function(response){
+    request({
+        method: 'GET',
+        uri: url,
+    },function(response){
         response.on("data", function(data){
             const jsondata = JSON.parse(data)
             const temp = jsondata.main.temp
