@@ -16,7 +16,7 @@ app.get('/updateWeather', function(req, res) {
 app.post('/', function(req,res) {
     let counter = 0;
     let interval = setInterval(() => {
-        const cityName = 'Warszawa'
+        const cityName = req.body.cityName
         const url = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=d248ede03a6ab01b39c2b33e5adc019c&units=metric`
         
         https.get(url, function(response){
