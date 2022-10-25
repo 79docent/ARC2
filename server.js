@@ -44,7 +44,7 @@ app.route('/getweather').get(function(req, res) {
                 counter++;
             });
         });
-    }, 300000);
+    }, 1*60*1000);
     
 });
 
