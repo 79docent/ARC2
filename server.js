@@ -51,6 +51,7 @@ app.route('/getweather/:user/:city').get(function(req, res) {
     let user = req.params.user
     let cityName = req.params.city
     get_weather(user, cityName);
+    res.send("Getting weather!")
 });
 
 const PORT = process.env.PORT || 8080;
