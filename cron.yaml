@@ -1,4 +1,1 @@
 cron:
-- description: "save weather every 1 minutes"
-  url: /getweather
-  schedule: every 1 mins
