@@ -1,1 +1,4 @@
 cron:
+- description: "get cities weather"
+  url: /citiesweather
+  schedule: every 5 mins
