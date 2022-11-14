@@ -16,18 +16,25 @@ app.get('/user', function(req, res){
 app.post('/usercity', async function(req, res) {
     let user = req.body.user
     let cityName = req.body.cityName
-    let entityKey = datastore.key('UserCities')
-    let entity = {
-        key: entityKey,
-        data: {
-            city: cityName,
-            user: user,
-        },
-    };
+    let string = "User and City combo already exists";
 
-    datastore.save(entity);
+    const [userCityCheck] = await datastore.runQuery(datastore.createQuery('UserCities').filter('user', '=', user).filter('city', '=', cityName))
+    if(userCityCheck[0] == undefined){
+        let entityKey = datastore.key('UserCities')
+        let entity = {
+            key: entityKey,
+            data: {
+                city: cityName,
+                user: user,
+            },
+        };
+        datastore.save(entity);
+        string = "Success"
+    }
 
-    if(!(await datastore.runQuery(datastore.createQuery('City').filter('name', '=', cityName)))){
+    const [cityCheck] = await datastore.runQuery(datastore.createQuery('City').filter('name', '=', cityName))
+
+    if(cityCheck[0] == undefined){
         let cityEntityKey = datastore.key('City')
         let cityEntity = {
             key: cityEntityKey,
@@ -38,20 +45,21 @@ app.post('/usercity', async function(req, res) {
         datastore.save(cityEntity);
     };
 
-    res.send("Success")
+    res.send(string)
 });
 
 app.get('/getweather/:user', async function(req, res){
     const cityQuery = datastore.createQuery('UserCities').filter('user', '=', req.params.user);
     const [userCities] = await datastore.runQuery(cityQuery);
+    let string = ``;
 
     userCities.forEach(async e => {
         let weatherQuery = datastore.createQuery('Weather').filter('city', '=', e.city).limit(1)
         let [weather] = await datastore.runQuery(weatherQuery)
-        res.write(`${e.city}: ${weather.des} ${weather.temp}`)
-        console.log(`${e.city}: ${weather.des} ${weather.temp}`)
+        string += `${e.city}: ${weather[0].des} ${weather[0].temp}<br>`
+        console.log(`${e.city}: ${weather[0].des} ${weather[0].temp}`)
     })
-    res.end()
+    res.send(string)
 });
 
 app.get('/citiesweather', async function(req, res) {
