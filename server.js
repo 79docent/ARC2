@@ -1,9 +1,9 @@
 const express = require("express")
-const app = express()
 const path = require('path')
 const bodyParser = require("body-parser")
-const https = require("https")
 const {Datastore} = require('@google-cloud/datastore');
+const axios = require("axios")
+const app = express()
 
 const datastore = new Datastore();
 
@@ -18,32 +18,45 @@ app.post('/usercity', async function(req, res) {
     let cityName = req.body.cityName
     let string = "User and City combo already exists";
 
-    const [userCityCheck] = await datastore.runQuery(datastore.createQuery('UserCities').filter('user', '=', user).filter('city', '=', cityName))
-    if(userCityCheck[0] == undefined){
-        let entityKey = datastore.key('UserCities')
-        let entity = {
-            key: entityKey,
-            data: {
-                city: cityName,
-                user: user,
-            },
-        };
-        datastore.save(entity);
-        string = "Success"
+    const userTransaction = datastore.transaction();
+    try{
+        await userTransaction.run();
+        const [userCityCheck] = await datastore.runQuery(datastore.createQuery('UserCities').filter('user', '=', user).filter('city', '=', cityName));
+        if(userCityCheck[0] == undefined){
+            let entityKey = datastore.key(['UserCities', `${user}_${cityName}`]);
+            let entity = {
+                key: entityKey,
+                data: {
+                    city: cityName,
+                    user: user,
+                },
+            };
+            datastore.save(entity);
+            string = "Success"
+        }
+        await userTransaction.commit();
+    } catch(err){
+        await userTtransaction.rollback();
     }
 
-    const [cityCheck] = await datastore.runQuery(datastore.createQuery('City').filter('name', '=', cityName))
-
-    if(cityCheck[0] == undefined){
-        let cityEntityKey = datastore.key('City')
-        let cityEntity = {
-            key: cityEntityKey,
-            data: {
-                name: cityName,
-            },
+    const cityTransaction = datastore.transaction();
+    try{
+        const [cityCheck] = await datastore.runQuery(datastore.createQuery('City').filter('name', '=', cityName));
+        if(cityCheck[0] == undefined){
+            let cityEntityKey = datastore.key(['City', `City_${cityName}`]);
+            let cityEntity = {
+                key: cityEntityKey,
+                data: {
+                    name: cityName,
+                },
+            };
+            datastore.save(cityEntity);
         };
-        datastore.save(cityEntity);
-    };
+        await cityTransaction.commit();
+    } catch(err){
+        await cityTransaction.rollback();
+    }
+    
 
     res.send(string)
 });
@@ -66,29 +79,35 @@ app.get('/citiesweather', async function(req, res) {
     const query = datastore.createQuery('City').order('name');
     const [cities] = await datastore.runQuery(query);
 
-    cities.forEach(city => {
-        const url = `https://api.openweathermap.org/data/2.5/weather?q=${city.name}&appid=d248ede03a6ab01b39c2b33e5adc019c&units=metric`
-        https.get(url, function(response){
-            response.on("data", function(data){
-                const jsondata = JSON.parse(data)
-                const temp = jsondata.main.temp
-                const des = jsondata.weather[0].description
+    cities.forEach(async city => {
+        const url1 = `https://api.openweathermap.org/data/2.5/weather?q=${city.name}&appid=d248ede03a6ab01b39c2b33e5adc019c&units=metric`
+        const url2 = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city.name}/today?unitGroup=metric&elements=name%2Ctemp%2Cdescription&include=fcst%2Ccurrent&key=8VKGYLZHR73EHPUMQURTDB6Z9&contentType=json`
+        const url3 = `https://api.weatherbit.io/v2.0/current?city=${city.name}&key=a73072f87c7c4f1ca87aa7d12b357afb`
+        await axios.all([axios.get(url1), axios.get(url2), axios.get(url3)]).then(axios.spread(function(res1, res2, res3) {
+            const temp1 = parseFloat(res1.data.main.temp);
+            const des = res1.data.weather[0].description;
+            const temp2 = parseFloat(res2.data.currentConditions.temp);
+            const temp3 = parseFloat(res3.data.data[0].app_temp);
+
+
+            let avgTemp = (temp1 + temp2 + temp3)/3;
             
-                const entityKey = datastore.key('Weather')
+            const entityKey = datastore.key('Weather')
             
-                const entity = {
-                    key: entityKey,
-                    data: {
-                        city: city.name,
-                        temp: temp,
-                        des: des,
-                    },
-                };
+            const entity = {
+                key: entityKey,
+                data: {
+                    city: city.name,
+                    temp: avgTemp,
+                    des: des,
+                    date: new Date(),
+                },
+            };
             
-                datastore.save(entity)
-            });
-        });
+            datastore.save(entity);
+        }));
     });
+    res.sendStatus(200)
 });
 
 const PORT = process.env.PORT || 8080;
