@@ -1,0 +1,26 @@
+{
+  "type": "record",
+  "name": "Avro",
+  "fields": [
+    {
+      "name": "country",
+      "type": "string"
+    },
+    {
+      "name": "pressure",
+      "type": "float"
+    },
+    {
+      "name": "humidity",
+      "type": "float"
+    },
+    {
+      "name": "sunrise",
+      "type": "string"
+    },
+    {
+      "name": "sunset",
+      "type": "string"
+    }
+  ]
+}
